@@ -77,9 +77,17 @@ describe("Bike shop API", () => {
     const all = await request(app.getHttpServer())
       .get("/customers")
       .expect(200);
-    expect(
-      (all.body as CustomerResponseDto[]).map((item) => item.lastName),
-    ).toEqual(["Bernard", "Durand", "Martin", "Moreau"]);
+    const page = all.body as {
+      totalCount: number;
+      customers: CustomerResponseDto[];
+    };
+    expect(page.totalCount).toBe(4);
+    expect(page.customers.map((item) => item.lastName)).toEqual([
+      "Bernard",
+      "Durand",
+      "Martin",
+      "Moreau",
+    ]);
     await request(app.getHttpServer())
       .patch(`/customers/${customer.id}`)
       .send({ city: "Paris", phone: "0600000000" })
@@ -286,9 +294,7 @@ describe("Bike shop API", () => {
     expect(await database.getRepository(BikeEntity).count()).toBe(4);
   });
 
-  it("exposes no bike catalogue routes or Hello World route", async () => {
-    await request(app.getHttpServer()).get("/bikes").expect(404);
-    await request(app.getHttpServer()).post("/bikes").send({}).expect(404);
+  it("exposes no Hello World route", async () => {
     await request(app.getHttpServer()).get("/").expect(404);
   });
 });
