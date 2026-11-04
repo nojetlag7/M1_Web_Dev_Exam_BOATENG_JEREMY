@@ -28,11 +28,11 @@ export const Layout = () => {
           paddingTop: ".5rem",
         }}
       >
-        <Row>
-          <Col>
+        <Row align="middle" style={{ width: "100%" }}>
+          <Col flex="none">
             <Title style={{ margin: 0 }}>Bikez.ai</Title>
           </Col>
-          <Col>
+          <Col flex="auto">
             <AppMenu />
           </Col>
         </Row>
