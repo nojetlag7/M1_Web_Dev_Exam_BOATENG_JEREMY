@@ -28,9 +28,9 @@ export class CustomersService {
     @Inject(CustomersRepository)
     private readonly repository: CustomersRepository,
   ) {}
-
-  findAll(): Promise<CustomerModel[]> {
-    return this.repository.findAll();
+//find all customers with pagination
+  findAll(page: number, limit: number): Promise<[CustomerModel[], number]> {
+    return this.repository.findAll(page, limit);
   }
 
   async findById(id: string): Promise<CustomerModel> {

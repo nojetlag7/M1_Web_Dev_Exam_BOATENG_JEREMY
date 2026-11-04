@@ -58,8 +58,8 @@ describe("CustomersService", () => {
       lastName: "Martin",
       email: "alice@example.com",
     });
-    repository.findAll.mockResolvedValue([customer]);
-    expect(await service.findAll()).toEqual([customer]);
+    repository.findAll.mockResolvedValue([[customer], 1]);
+    expect(await service.findAll(1, 10)).toEqual([[customer], 1]);
   });
 
   it("returns 404 for a missing customer and does not query purchases", async () => {
