@@ -5,15 +5,26 @@ import type {
   CustomerModel,
 } from "../models/CustomerModel";
 
+
+const limit = 10;
+
 export const useCustomersProvider = () => {
   const [customers, setCustomers] = useState<CustomerModel[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [totalCount, setTotalCount] = useState<number>(0);
 
-  const load = () => {
+  const load = (pageToLoad: number = page) => {
     setIsLoading(true);
     axios
-      .get("http://localhost:3000/customers")
-      .then((result) => setCustomers(result.data))
+      .get<{ totalCount: number; customers: CustomerModel[] }>(
+        "http://localhost:3000/customers",
+        { params: { page: pageToLoad, limit } },
+      )
+      .then((result) => {
+        setCustomers(result.data.customers);
+        setTotalCount(result.data.totalCount);
+      })
       .finally(() => {
         setIsLoading(false);
       });
@@ -21,7 +32,9 @@ export const useCustomersProvider = () => {
 
   const deleteCustomer = (id: string) => {
     axios.delete(`http://localhost:3000/customers/${id}`).then(() => {
-      setCustomers((prev) => prev.filter((customer) => customer.id !== id));
+      // The page we just emptied is gone; the effect on `page` reloads the previous one.
+      if (customers.length === 1 && page > 1) setPage(page - 1);
+      else load();
     });
   };
 
@@ -29,16 +42,19 @@ export const useCustomersProvider = () => {
   const createCustomer = (input: CreateCustomerModel) =>
     axios
       .post<CustomerModel>("http://localhost:3000/customers", input)
-      .then((result) => {
-        // Keep the same order as the backend: last name, then first name
-        setCustomers((prev) =>
-          [...prev, result.data].sort(
-            (a, b) =>
-              a.lastName.localeCompare(b.lastName) ||
-              a.firstName.localeCompare(b.firstName),
-          ),
-        );
+      .then(() => {
+        load();
       });
 
-  return { customers, load, isLoading, deleteCustomer, createCustomer };
+  return {
+    customers,
+    load,
+    isLoading,
+    deleteCustomer,
+    createCustomer,
+    page,
+    setPage,
+    limit,
+    totalCount,
+  };
 };
